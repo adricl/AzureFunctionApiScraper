@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
@@ -26,23 +27,24 @@ namespace ApiToCloud
             var config = new ConfigurationBuilder()
                 .SetBasePath(appDir)
                 .AddEnvironmentVariables()
-                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("local.settings.json", optional: !localTest, reloadOnChange: true)
                 .Build();
 
-            // foreach(var item in config.AsEnumerable().ToList())
-            // {
-            //     logger.LogInformation($"Config Settings: {item.Key}");
-            // }
+            foreach(var item in config.AsEnumerable().ToList())
+            {
+                //logger.LogInformation($"Config Settings: {item.Key}");
+                Console.WriteLine($"Config Settings: {item.Key}");
+            }
             if (localTest)
                 connectionString = config["values:AzureWebJobsStorage"];
             else 
                 connectionString = config["AzureWebJobsStorage"];
             
 
-            //var persons = new PopulateFlindersStreetPersons(logger, client, connectionString);
-            //persons.Run();
+            var persons = new PopulateFlindersStreetPersons(logger, client, connectionString);
+            persons.Run();
 
-            var capciumPrices = new GetCapciumPrices(logger, client, connectionString);
+            var capciumPrices = new GetCapciumPrices(logger, client, connectionString, localTest);
             capciumPrices.Run();
         }
 
